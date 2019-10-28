@@ -6,7 +6,7 @@ from torch.autograd import Variable
 import sys, os, time
 sys.path.append('utils')
 sys.path.append('models')
-from utils.data import CelebA, RandomNoiseGenerator
+from utils.data import Painting, RandomNoiseGenerator
 from models.model import Generator, Discriminator
 import argparse
 import numpy as np
@@ -413,7 +413,7 @@ if __name__ == '__main__':
     D = Discriminator(num_channels=3, mbstat_avg=args.mbstat_avg, resolution=args.target_resol, fmap_max=latent_size, fmap_base=8192, sigmoid_at_end=sigmoid_at_end)
     print(G)
     print(D)
-    data = CelebA()
+    data = Painting()
     noise = RandomNoiseGenerator(latent_size, 'gaussian')
     pggan = PGGAN(G, D, data, noise, opts)
     pggan.train()

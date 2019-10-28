@@ -438,6 +438,26 @@ def create_lsun(h5_filename, lmdb_dir, resolution=256, max_images=None):
         
 #----------------------------------------------------------------------------
 
+def create_painting(h5_filename, painting_dir, cx=89, cy=121):
+    print('Creating Painting dataset %s from %s' % (h5_filename, painting_dir))
+    glob_pattern = os.path.join(painting_dir, 'img_align_celeba_png', '*.png')
+    image_filenames = sorted(glob.glob(glob_pattern))
+    num_images = len(image_filenames)
+
+    h5 = HDF5Exporter(h5_filename, 256, 3)
+    for idx in xrange(num_images):
+        print('%d / %d\r' % (idx, num_images))
+        img = np.asarray(PIL.Image.open(image_filenames[idx]))
+        img = img.transpose(2, 0, 1)  # HWC => CHW
+        h5.add_images(img[np.newaxis])
+
+    print('%-40s\r' % 'Flushing data...')
+    h5.close()
+    print('%-40s\r' % '')
+    print('Added %d images.' % num_images)
+
+#----------------------------------------------------------------------------
+
 def create_celeba(h5_filename, celeba_dir, cx=89, cy=121):
     print('Creating CelebA dataset %s from %s' % (h5_filename, celeba_dir))
     glob_pattern = os.path.join(celeba_dir, 'img_align_celeba_png', '*.png')
@@ -685,6 +705,11 @@ def execute_cmdline(argv):
     p.add_argument(     'delta_dir',        help='Directory to read CelebA-HQ deltas from')
     p.add_argument(     '--num_threads',    help='Number of concurrent threads (default: 4)', type=int, default=4)
     p.add_argument(     '--num_tasks',      help='Number of concurrent processing tasks (default: 100)', type=int, default=100)
+
+    p = add_command('create_painting', 'Create HDF5 dataset for painting.',
+                    'create_painting painting-256x256.h5 ~/painting')
+    p.add_argument('h5_filename', help='HDF5 file to create')
+    p.add_argument('painting_dir', help='Directory to read painting data from')
 
     args = parser.parse_args(argv[1:])
     func = globals()[args.command]
